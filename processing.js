@@ -1614,26 +1614,64 @@ function buildProcessing( curElement ){
     }
   };
   
-  p.arc = function arc( x, y, width, height, start, stop ) {       if ( width <= 0 )
-     return;
+  p.arc = function arc( x, y, width, height, start, stop ) {       
+    if ( width <= 0 || height <= 0 || start == stop) return;
+    if(Math.abs(stop - start) >= p.TWO_PI) {
+//      p.ellipse(x, y, width, height);
+//      return;
+    }
+    if ( curEllipseMode == p.CORNER ) {
+      x += width / 2;
+      y += height / 2;
+    }
+    curContext.moveTo( x, y );
+    curContext.beginPath();   
+    if(width == height) {
+      curContext.arc( x, y, curEllipseMode == p.CENTER_RADIUS ? width : width/2, start, stop, false );
+    } else {
+      var rx,ry,dx1,dx2,dy1,dy2,C;
+      
+      rx = curEllipseMode == p.CENTER_RADIUS ? width : width / 2;
+      ry = curEllipseMode == p.CENTER_RADIUS ? height : height / 2;
+      
+      start = start % p.TWO_PI;
+      stop = stop % p.TWO_PI;
+      if(start >= stop) {
+        stop = stop + p.TWO_PI;
+      }
+      dx1 = Math.cos(start);
+      dy1 = Math.sin(start);
+      curContext.lineTo(x + rx * dx1, y + ry * dy1);
+      C = 0.5522847498307933;
+      while(start + p.HALF_PI <= stop) {
+        dx2 = -dy1; dy2 = dx1;
+        curContext.bezierCurveTo(x + rx * (dx1 - C*dy1), y + ry * (dy1 + C*dx1), x + rx * (dx2 + C*dy2), y + ry * (dy2 - C*dx2), x + rx * dx2, y + ry * dy2 );
+        dx1 = dx2; dy1 = dy2;
+        start = start + p.HALF_PI;
+      }
+      if(start < stop) {
+        var ax,ay,ax2,ay2,q1,q2;
+        
+        ax = Math.cos(Math.PI/4 - (stop - start) / 2);
+        ay = Math.sin(Math.PI/4 - (stop - start) / 2);
+        ax2 = ax*ax; ay2 = ay*ay;
+        q1 = ax2 + ay2; q2 = q1 + ax*ay + ay*ax;
+        C = 1.3333333333333333 * (Math.sqrt(2*q1*q2) - q2) / (ax2 - ay2);
 
-   if ( curEllipseMode == p.CORNER ) {
-     x += width / 2;
-     y += height / 2;
-   }
-      curContext.moveTo( x, y );
-   curContext.beginPath();   
-   curContext.arc( x, y, curEllipseMode == p.CENTER_RADIUS ? width : width/2, start, stop, false );
-
-   if ( doStroke )
-     curContext.stroke();
-
-   curContext.lineTo( x, y );
-
-   if ( doFill )
-     curContext.fill();
-   
-   curContext.closePath();
+        dx2 = Math.cos(stop); 
+        dy2 = Math.sin(stop);
+        curContext.bezierCurveTo(x + rx * (dx1 - C*dy1), y + ry * (dy1 + C*dx1), x + rx * (dx2 + C*dy2), y + ry * (dy2 - C*dx2), x + rx * dx2, y + ry * dy2 );
+      }
+    }
+    if ( doStroke )
+      curContext.stroke();
+    
+    curContext.lineTo( x, y );
+    
+    if ( doFill )
+      curContext.fill();
+    
+    curContext.closePath();
   };
   
   p.line = function line( x1, y1, x2, y2 ) {   
