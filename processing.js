@@ -1617,8 +1617,8 @@ function buildProcessing( curElement ){
   p.arc = function arc( x, y, width, height, start, stop ) {       
     if ( width <= 0 || height <= 0 || start == stop) return;
     if(Math.abs(stop - start) >= p.TWO_PI) {
-//      p.ellipse(x, y, width, height);
-//      return;
+      p.ellipse(x, y, width, height);
+      return;
     }
     if ( curEllipseMode == p.CORNER ) {
       x += width / 2;
