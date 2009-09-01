@@ -1641,6 +1641,7 @@ function buildProcessing( curElement ){
       }
       dx1 = Math.cos(start);
       dy1 = Math.sin(start);
+      curContext.moveTo( x, y );
       curContext.lineTo(x + rx * dx1, y + ry * dy1);
       C = 0.5522847498307933;
       while(start + p.HALF_PI <= stop) {
